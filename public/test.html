@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <title>QA Mini Platform - ტესტირება</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
@@ -172,8 +175,10 @@
         function generateReport(){
             document.querySelector('#checklists-test-container').style.display = 'none';
             document.querySelector('#button-GenerateRTMOnC').style.display = 'none';
-
-            
+            //document.querySelector('#hiddenGeneratePdf').style.display = 'visible';
+            let element = document.getElementById("hiddenGeneratePdf");
+            let hidden = element.getAttribute("hidden");
+            element.removeAttribute("hidden");
             let passedCount=0, failedCount=0;
             const totalCount=testData.length;
             let reportRows='';
@@ -254,7 +259,29 @@
                 }
             });
         }
+        async function downloadReportAsPDF() {
+    const reportDiv = document.getElementById('report-output');
+    if (!reportDiv || reportDiv.innerHTML.trim() === '') {
+        alert('Report ჯერ არ არის გენერირებული.');
+        return;
+    }
+
+    // HTML -> Canvas
+    const canvas = await html2canvas(reportDiv, { scale: 2 }); // უკეთესი ხარისხი
+    const imgData = canvas.toDataURL('image/png');
+
+    // PDF შექმნა
+    const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`QA_Report_${currentSessionId}.pdf`);
+}
+
     </script>
+    <button id="hiddenGeneratePdf"  hidden onclick="downloadReportAsPDF()" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; margin-top: 10px; cursor: pointer;">Download PDF</button>
+
 
 </body>
 </html>

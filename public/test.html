@@ -222,10 +222,13 @@ function generateReport() {
             <tr>
                 <td>${item.feature}</td>
                 <td>${item.id}</td>
-                <td ${bugIdClass}>${bugId}</td>
+                <td ${bugIdClass}>
+    <a href="${bugId}" target="_blank">${bugId}</a>
+</td>
                 <td ${statusClass}>${item.status}</td>
             </tr>
         `;
+        
     });
 
     // სტატისტიკის გენერაცია

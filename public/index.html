@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA Mini Platform - Checklists</title>
+    <style>
+        /* მარტივი სტილები ვიზუალური გაყოფისთვის */
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .feature-selection, .checklist-editor { margin-bottom: 40px; border: 1px solid #ccc; padding: 15px; border-radius: 5px; }
+        .checklist-item { margin-bottom: 10px; padding: 5px; border: 1px dashed #eee; display: flex; align-items: center; }
+        .checklist-item button { margin-left: 10px; cursor: pointer; background-color: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; }
+        .feature-title { font-weight: bold; margin-top: 15px; border-bottom: 2px solid #333; padding-bottom: 5px; }
+        #checklist-editor { display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>QA მინი პლატფორმა</h1>
+
+    <div class="feature-selection">
+        <h2>1. ფუნქციონალის შერჩევა</h2>
+        <form id="feature-selection-form">
+            <label><input type="checkbox" name="features" value="Cart"> Cart</label><br>
+            <label><input type="checkbox" name="features" value="Register"> Register</label><br>
+            <label><input type="checkbox" name="features" value="Authorization"> Authorization</label><br>
+            <label><input type="checkbox" name="features" value="Search"> Search</label><br>
+            <label><input type="checkbox" name="features" value="Filter"> Filter</label><br>
+            <label><input type="checkbox" name="features" value="Sort"> Sort</label><br>
+            <label><input type="checkbox" name="features" value="Contact us"> Contact us</label><br>
+            <label><input type="checkbox" name="features" value="Subscribe"> Subscribe</label><br>
+            <br>
+            <button type="button" onclick="getChecklists()">ჩექლისტების გენერაცია</button>
+        </form>
+    </div>
+
+    <div id="checklist-editor" class="checklist-editor">
+        <h2>2. ჩექლისტების რედაქტირება</h2>
+        <p>თქვენ შეგიძლიათ წაშალოთ არასასურველი ჩექლისტები.</p>
+        <div id="checklists-container">
+            </div>
+        <button onclick="confirmSelection()">Confirm</button>
+    </div>
+
+    <script>
+        // გლობალური ცვლადი შერჩეული ჩექლისტების შესანახად
+        let currentChecklists = [];
+        let checklistContainer = document.getElementById('checklists-container');
+        let editorSection = document.getElementById('checklist-editor');
+
+        // ფუნქცია: არჩეული ფუნქციონალის მიხედვით ჩექლისტების მოთხოვნა
+        async function getChecklists() {
+            const form = document.getElementById('feature-selection-form');
+            const checkboxes = form.querySelectorAll('input[name="features"]:checked');
+            
+            // შევქმნათ მასივი არჩეული ფუნქციონალის სახელებით
+            const selectedFeatures = Array.from(checkboxes).map(cb => cb.value);
+
+            if (selectedFeatures.length === 0) {
+                alert('გთხოვთ, აირჩიოთ მინიმუმ ერთი ფუნქციონალი.');
+                return;
+            }
+
+            try {
+                // POST მოთხოვნა Node.js სერვერზე
+                const response = await fetch('/api/get-checklists', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ features: selectedFeatures }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentChecklists = data.checklists;
+                    displayChecklists(currentChecklists);
+                    editorSection.style.display = 'block'; // ვაჩენთ რედაქტორს
+                    window.scrollTo(0, document.body.scrollHeight); // ეკრანის ბოლოს გადასვლა
+                } else {
+                    alert('შეცდომა სერვერიდან: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                alert('კომუნიკაციის შეცდომა სერვერთან.');
+            }
+        }
+
+        // ფუნქცია: ჩექლისტების ეკრანზე გამოტანა
+        function displayChecklists(checklists) {
+            checklistContainer.innerHTML = '';
+            let currentFeature = null;
+
+            checklists.forEach(item => {
+                // ფუნქციონალის სათაურის გამოტანა, თუ შეიცვალა
+                if (item.feature !== currentFeature) {
+                    const title = document.createElement('h3');
+                    title.className = 'feature-title';
+                    title.textContent = `${item.feature} ფუნქციონალი`;
+                    checklistContainer.appendChild(title);
+                    currentFeature = item.feature;
+                }
+
+                // ჩექლისტის ელემენტის შექმნა
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'checklist-item';
+                itemDiv.id = `item-${item.id}`; // ელემენტის ID
+                
+                // ტექსტი: (ID) ტექსტი
+                const textSpan = document.createElement('span');
+                textSpan.textContent = `(${item.id}) ${item.text}`;
+                itemDiv.appendChild(textSpan);
+
+                // ღილაკი წაშლისთვის
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'წაშლა';
+                deleteButton.onclick = () => removeChecklistItem(item.id);
+                itemDiv.appendChild(deleteButton);
+
+                checklistContainer.appendChild(itemDiv);
+            });
+        }
+
+        // ფუნქცია: ჩექლისტის წაშლა (რომელიც არ გჭირდებათ)
+        function removeChecklistItem(idToRemove) {
+            // 1. წაშლა გლობალური მასივიდან
+            currentChecklists = currentChecklists.filter(item => item.id !== idToRemove);
+            
+            // 2. წაშლა HTML-დან
+            const element = document.getElementById(`item-${idToRemove}`);
+            if (element) {
+                element.remove();
+            }
+            console.log(`ჩექლისტი ID: ${idToRemove} წაიშალა.`);
+        }
+
+        // ფუნქცია: Confirm ღილაკის დაჭერა
+        async function confirmSelection() {
+            if (currentChecklists.length === 0) {
+                alert('არჩეული არ არის არც ერთი ჩექლისტი.');
+                return;
+            }
+
+            console.log("Confirm დაჭერილია. ფინალური ჩექლისტები:");
+            console.log(currentChecklists);
+            
+            // !!! შემდეგი ეტაპი: ამ მონაცემების სერვერზე გაგზავნა და ახალ გვერდზე გადამისამართება !!!
+            
+            try {
+                // POST მოთხოვნა შერჩეული ჩექლისტების შესანახად
+                const response = await fetch('/api/save-selection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ checklists: currentChecklists }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // გადამისამართება ტესტირების გვერდზე
+                    window.location.href = `/test-page/${data.sessionId}`; 
+                } else {
+                    alert('შეცდომა მონაცემების შენახვისას.');
+                }
+            } catch (error) {
+                 console.error('Save Error:', error);
+                 alert('მონაცემების შენახვისას კომუნიკაციის შეცდომა.');
+            }
+        }
+    </script>
+
+</body>
+</html>

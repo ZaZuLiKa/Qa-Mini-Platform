@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA Mini Platform - ტესტირება</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .checklist-item { 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            margin-bottom: 10px; 
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-details { flex-grow: 1; }
+        .item-details span { font-weight: bold; margin-right: 10px; }
+        .actions { display: flex; align-items: center; }
+        .status-pass { background-color: #d4edda; color: #155724; }
+        .status-fail { background-color: #f8d7da; color: #721c24; }
+        .status-pending { background-color: #ffeeba; color: #856404; }
+        .actions button { margin-left: 5px; padding: 8px 12px; cursor: pointer; }
+        #bug-report-section { display: none; margin-top: 10px; }
+        .feature-title { font-weight: bold; border-bottom: 1px solid #aaa; margin-top: 20px; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1>3. ტესტირების შესრულება</h1>
+    <h3 id="session-info">სესიის ID: <span id="session-id"></span></h3>
+
+    <div id="checklists-test-container">
+        <p>იტვირთება ჩექლისტები...</p>
+    </div>
+
+    <button onclick="generateReport()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; margin-top: 30px; cursor: pointer;">Report-ის გენერაცია (RTM)</button>
+
+    <div id="report-output" style="margin-top: 40px; display: none; border: 1px solid #000; padding: 20px;">
+        <h2>4. მოთხოვნების მიკვლევადობის მატრიცა (RTM)</h2>
+        <table id="rtm-table" border="1" width="100%" cellpadding="10">
+            <thead>
+                <tr>
+                    <th>ფუნქციონალი</th>
+                    <th>ჩექლისტის ID</th>
+                    <th>ბაგ რეპორტის ID</th>
+                    <th>სტატუსი</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+        let testData = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // სესიის ID-ის აღება URL-დან
+            const pathParts = window.location.pathname.split('/');
+            currentSessionId = pathParts[pathParts.length - 1];
+            document.getElementById('session-id').textContent = currentSessionId;
+
+            if (currentSessionId) {
+                fetchTestData();
+            } else {
+                document.getElementById('checklists-test-container').innerHTML = '<p style="color:red;">შეცდომა: სესიის ID ვერ მოიძებნა.</p>';
+            }
+        });
+
+        // ენდპოინტი: სერვერიდან მონაცემების მოტანა ამ სესიისთვის
+        async function fetchTestData() {
+            try {
+                const response = await fetch(`/api/get-test-data/${currentSessionId}`);
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    testData = data.testData;
+                    displayTestChecklists();
+                } else {
+                    alert('ტესტ-მონაცემების მოტანა ვერ მოხერხდა: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                alert('კომუნიკაციის შეცდომა სერვერთან.');
+            }
+        }
+
+        // ჩექლისტების ჩვენება ტესტირების ფორმატში
+        function displayTestChecklists() {
+            const container = document.getElementById('checklists-test-container');
+            container.innerHTML = '';
+            let currentFeature = null;
+
+            testData.forEach(item => {
+                // სათაური
+                if (item.feature !== currentFeature) {
+                    const title = document.createElement('h3');
+                    title.className = 'feature-title';
+                    title.textContent = `ფუნქციონალი: ${item.feature}`;
+                    container.appendChild(title);
+                    currentFeature = item.feature;
+                }
+
+                // ელემენტი
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `checklist-item status-${item.status.toLowerCase()}`;
+                itemDiv.id = `test-item-${item.id}`;
+                
+                // დეტალები
+                const details = document.createElement('div');
+                details.className = 'item-details';
+                details.innerHTML = `<span>(${item.id})</span> ${item.text} 
+                                     <small style="color: gray;">[სტატუსი: ${item.status}] ${item.bugId ? `(Bug ID: ${item.bugId})` : ''}</small>`;
+                itemDiv.appendChild(details);
+
+                // მოქმედებები
+                const actions = document.createElement('div');
+                actions.className = 'actions';
+                
+                const passBtn = document.createElement('button');
+                passBtn.textContent = 'Pass';
+                passBtn.onclick = () => updateTestStatus(item.id, 'Pass');
+                
+                const failBtn = document.createElement('button');
+                failBtn.textContent = 'Failed';
+                failBtn.onclick = () => showBugInput(item.id);
+
+                actions.appendChild(passBtn);
+                actions.appendChild(failBtn);
+
+                // ბაგის შეყვანის ველი (თავდაპირველად დამალული)
+                const bugInput = document.createElement('div');
+                bugInput.id = `bug-input-${item.id}`;
+                bugInput.style.display = 'none';
+                bugInput.innerHTML = `<input type="text" placeholder="Bug ID (მაგ: BUG-001)" id="bug-id-${item.id}" style="margin-left: 10px;"/>
+                                      <button onclick="updateTestStatus('${item.id}', 'Failed', document.getElementById('bug-id-${item.id}').value)">შენახვა</button>`;
+                
+                actions.appendChild(bugInput);
+                itemDiv.appendChild(actions);
+
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function showBugInput(id) {
+            // ვმალავთ ყველა ბაგის შეყვანის ველს და ვაჩენთ მხოლოდ არჩეულს
+            document.querySelectorAll('[id^="bug-input-"]').forEach(el => el.style.display = 'none');
+            const bugSection = document.getElementById(`bug-input-${id}`);
+            if (bugSection) {
+                bugSection.style.display = 'block';
+            }
+        }
+
+        // ფუნქცია: სტატუსის განახლება
+        function updateTestStatus(id, status, bugId = null) {
+            const index = testData.findIndex(item => item.id === id);
+            if (index !== -1) {
+                testData[index].status = status;
+                testData[index].bugId = status === 'Failed' ? (bugId || 'N/A') : null;
+                
+                // განახლებული მონაცემების გაგზავნა სერვერზე (შენახვა)
+                saveTestStatusUpdate(id, status, testData[index].bugId);
+                
+                // UI-ს განახლება
+                displayTestChecklists();
+            }
+        }
+
+        // ენდპოინტი: სტატუსის სერვერზე შენახვა
+        async function saveTestStatusUpdate(checklistItemId, status, bugId) {
+            try {
+                const response = await fetch('/api/update-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        sessionId: currentSessionId, 
+                        checklistItemId: checklistItemId, 
+                        status: status, 
+                        bugId: bugId 
+                    }),
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    alert('შეცდომა სტატუსის შენახვისას.');
+                }
+            } catch (error) {
+                console.error('Save status error:', error);
+            }
+        }
+
+        // ფუნქცია: RTM რეპორტის გენერაცია
+        function generateReport() {
+            const reportBody = document.querySelector('#rtm-table tbody');
+            reportBody.innerHTML = '';
+
+            testData.forEach(item => {
+                const row = reportBody.insertRow();
+                // ფუნქციონალი
+                row.insertCell().textContent = item.feature; 
+                // ჩექლისტის ID
+                row.insertCell().textContent = item.id; 
+                // ბაგ რეპორტის ID
+                row.insertCell().textContent = item.bugId || 'N/A';
+                // სტატუსი
+                const statusCell = row.insertCell();
+                statusCell.textContent = item.status;
+                statusCell.className = `status-${item.status.toLowerCase()}`;
+            });
+
+            document.getElementById('report-output').style.display = 'block';
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+    </script>
+</body>
+</html>

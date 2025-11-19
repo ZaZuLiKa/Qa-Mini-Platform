@@ -1,0 +1,24 @@
+{
+  "name": "qa-mini-platform",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZaZuLiKa/Qa-Mini-Platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ZaZuLiKa/Qa-Mini-Platform/issues"
+  },
+  "homepage": "https://github.com/ZaZuLiKa/Qa-Mini-Platform#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

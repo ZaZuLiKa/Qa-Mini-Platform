@@ -24,6 +24,9 @@
         .actions button { margin-left: 5px; padding: 8px 12px; cursor: pointer; }
         #bug-report-section { display: none; margin-top: 10px; }
         .feature-title { font-weight: bold; border-bottom: 1px solid #aaa; margin-top: 20px; padding-bottom: 5px; }
+        
+        /* RTM სტილები */
+        .rtm-bug-id { color: red; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -39,7 +42,10 @@
 
     <div id="report-output" style="margin-top: 40px; display: none; border: 1px solid #000; padding: 20px;">
         <h2>4. მოთხოვნების მიკვლევადობის მატრიცა (RTM)</h2>
-        <table id="rtm-table" border="1" width="100%" cellpadding="10">
+        
+        <div id="report-summary" style="margin-bottom: 15px; font-size: 1.1em;"></div>
+
+        <table id="rtm-table" border="1" width="100%" cellpadding="10" cellspacing="0">
             <thead>
                 <tr>
                     <th>ფუნქციონალი</th>
@@ -51,6 +57,7 @@
             <tbody>
                 </tbody>
         </table>
+        <p style="margin-top: 10px; font-size: 0.9em; color: gray;">* RTM ცხრილში ნაჩვენებია ყველა ჩექლისტი, ბაგ რეპორტის ID ნაჩვენებია მხოლოდ 'Failed' სტატუსის დროს.</p>
     </div>
 
     <script>
@@ -146,7 +153,6 @@
         }
 
         function showBugInput(id) {
-            // ვმალავთ ყველა ბაგის შეყვანის ველს და ვაჩენთ მხოლოდ არჩეულს
             document.querySelectorAll('[id^="bug-input-"]').forEach(el => el.style.display = 'none');
             const bugSection = document.getElementById(`bug-input-${id}`);
             if (bugSection) {
@@ -191,25 +197,64 @@
             }
         }
 
-        // ფუნქცია: RTM რეპორტის გენერაცია
+        // ფუნქცია: RTM რეპორტის გენერაცია (შესწორებული და გამართული)
         function generateReport() {
             const reportBody = document.querySelector('#rtm-table tbody');
+            const summaryDiv = document.getElementById('report-summary');
             reportBody.innerHTML = '';
+            
+            let passedCount = 0;
+            let failedCount = 0;
+            const totalCount = testData.length;
 
             testData.forEach(item => {
+                // სტატისტიკის დათვლა
+                if (item.status === 'Pass') {
+                    passedCount++;
+                } else if (item.status === 'Failed') {
+                    failedCount++;
+                }
+
+                // *** ცხრილის შევსება - ყველა ჩექლისტი ***
                 const row = reportBody.insertRow();
-                // ფუნქციონალი
+                
+                // 1. ფუნქციონალი
                 row.insertCell().textContent = item.feature; 
-                // ჩექლისტის ID
+                
+                // 2. ჩექლისტის ID
                 row.insertCell().textContent = item.id; 
-                // ბაგ რეპორტის ID
-                row.insertCell().textContent = item.bugId || 'N/A';
-                // სტატუსი
+                
+                // 3. ბაგ რეპორტის ID
+                const bugCell = row.insertCell();
+                bugCell.textContent = item.bugId || '-';
+                
+                if (item.status === 'Failed') {
+                     // თუ Failed-ია, წითლად მონიშნეთ ბაგის ID
+                     bugCell.className = 'rtm-bug-id';
+                }
+
+                // 4. სტატუსი
                 const statusCell = row.insertCell();
                 statusCell.textContent = item.status;
                 statusCell.className = `status-${item.status.toLowerCase()}`;
             });
 
+            // სტატისტიკის გენერაცია
+            const pendingCount = totalCount - passedCount - failedCount;
+            const passPercent = totalCount > 0 ? ((passedCount / totalCount) * 100).toFixed(1) : 0;
+            const failPercent = totalCount > 0 ? ((failedCount / totalCount) * 100).toFixed(1) : 0;
+            
+            summaryDiv.innerHTML = `
+                <p><strong>რეპორტის გენერირების დრო:</strong> ${new Date().toLocaleString()}</p>
+                <p>
+                    სულ: <strong>${totalCount}</strong> | 
+                    ✅ Pass: <strong>${passedCount}</strong> (${passPercent}%) | 
+                    ❌ Failed: <strong>${failedCount}</strong> (${failPercent}%) |
+                    ⏳ Pending: <strong>${pendingCount}</strong>
+                </p>
+            `;
+
+            // რეპორტის გამოჩენა
             document.getElementById('report-output').style.display = 'block';
             window.scrollTo(0, document.body.scrollHeight);
         }

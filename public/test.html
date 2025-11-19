@@ -197,67 +197,105 @@
             }
         }
 
-        // ფუნქცია: RTM რეპორტის გენერაცია (შესწორებული და გამართული)
-        function generateReport() {
-            const reportBody = document.querySelector('#rtm-table tbody');
-            const summaryDiv = document.getElementById('report-summary');
-            reportBody.innerHTML = '';
-            
-            let passedCount = 0;
-            let failedCount = 0;
-            const totalCount = testData.length;
-
-            testData.forEach(item => {
-                // სტატისტიკის დათვლა
-                if (item.status === 'Pass') {
-                    passedCount++;
-                } else if (item.status === 'Failed') {
-                    failedCount++;
-                }
-
-                // *** ცხრილის შევსება - ყველა ჩექლისტი ***
-                const row = reportBody.insertRow();
-                
-                // 1. ფუნქციონალი
-                row.insertCell().textContent = item.feature; 
-                
-                // 2. ჩექლისტის ID
-                row.insertCell().textContent = item.id; 
-                
-                // 3. ბაგ რეპორტის ID
-                const bugCell = row.insertCell();
-                bugCell.textContent = item.bugId || '-';
-                
-                if (item.status === 'Failed') {
-                     // თუ Failed-ია, წითლად მონიშნეთ ბაგის ID
-                     bugCell.className = 'rtm-bug-id';
-                }
-
-                // 4. სტატუსი
-                const statusCell = row.insertCell();
-                statusCell.textContent = item.status;
-                statusCell.className = `status-${item.status.toLowerCase()}`;
-            });
-
-            // სტატისტიკის გენერაცია
-            const pendingCount = totalCount - passedCount - failedCount;
-            const passPercent = totalCount > 0 ? ((passedCount / totalCount) * 100).toFixed(1) : 0;
-            const failPercent = totalCount > 0 ? ((failedCount / totalCount) * 100).toFixed(1) : 0;
-            
-            summaryDiv.innerHTML = `
-                <p><strong>რეპორტის გენერირების დრო:</strong> ${new Date().toLocaleString()}</p>
-                <p>
-                    სულ: <strong>${totalCount}</strong> | 
-                    ✅ Pass: <strong>${passedCount}</strong> (${passPercent}%) | 
-                    ❌ Failed: <strong>${failedCount}</strong> (${failPercent}%) |
-                    ⏳ Pending: <strong>${pendingCount}</strong>
-                </p>
-            `;
-
-            // რეპორტის გამოჩენა
-            document.getElementById('report-output').style.display = 'block';
-            window.scrollTo(0, document.body.scrollHeight);
+        
+        // ფუნქცია: RTM რეპორტის გენერაცია (ახალ ფანჯარაში)
+function generateReport() {
+    let passedCount = 0;
+    let failedCount = 0;
+    const totalCount = testData.length;
+    let reportRows = ''; // ცვლადი ცხრილის რიგებისთვის
+    
+    // სტატისტიკის დათვლა და რიგების გენერაცია
+    testData.forEach(item => {
+        if (item.status === 'Pass') {
+            passedCount++;
+        } else if (item.status === 'Failed') {
+            failedCount++;
         }
+        
+        // RTM რიგის გენერაცია
+        const bugId = item.bugId || '-';
+        const bugIdClass = item.status === 'Failed' ? 'class="rtm-bug-id"' : '';
+        const statusClass = `class="status-${item.status.toLowerCase()}"`;
+
+        reportRows += `
+            <tr>
+                <td>${item.feature}</td>
+                <td>${item.id}</td>
+                <td ${bugIdClass}>${bugId}</td>
+                <td ${statusClass}>${item.status}</td>
+            </tr>
+        `;
+    });
+
+    // სტატისტიკის გენერაცია
+    const pendingCount = totalCount - passedCount - failedCount;
+    const passPercent = totalCount > 0 ? ((passedCount / totalCount) * 100).toFixed(1) : 0;
+    const failPercent = totalCount > 0 ? ((failedCount / totalCount) * 100).toFixed(1) : 0;
+
+    const summaryHTML = `
+        <p><strong>რეპორტის გენერირების დრო:</strong> ${new Date().toLocaleString()}</p>
+        <p>
+            სულ: <strong>${totalCount}</strong> | 
+            ✅ Pass: <strong>${passedCount}</strong> (${passPercent}%) | 
+            ❌ Failed: <strong>${failedCount}</strong> (${failPercent}%) |
+            ⏳ Pending: <strong>${pendingCount}</strong>
+        </p>
+    `;
+
+    // *** ახალი ფანჯრის HTML სტრუქტურა ***
+    const reportHTML = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>RTM Report - Session ${currentSessionId}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                h2 { border-bottom: 2px solid #000; padding-bottom: 10px; }
+                table { border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                .status-pass { background-color: #d4edda; color: #155724; }
+                .status-fail { background-color: #f8d7da; color: #721c24; }
+                .status-pending { background-color: #ffeeba; color: #856404; }
+                .rtm-bug-id { color: red; font-weight: bold; }
+                .summary strong { font-size: 1.1em; }
+            </style>
+        </head>
+        <body>
+            <h1>QA Mini Platform - ტესტირების რეპორტი</h1>
+            <h3>სესიის ID: ${currentSessionId}</h3>
+
+            <div class="summary">${summaryHTML}</div>
+
+            <h2>მოთხოვნების მიკვლევადობის მატრიცა (RTM)</h2>
+            <table width="100%">
+                <thead>
+                    <tr>
+                        <th>ფუნქციონალი</th>
+                        <th>ჩექლისტის ID</th>
+                        <th>ბაგ რეპორტის ID</th>
+                        <th>სტატუსი</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${reportRows}
+                </tbody>
+            </table>
+        </body>
+        </html>
+    `;
+    
+    // ძველ div-ს აღარ ვიყენებთ, ვხსნით ახალ ფანჯარას
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+        newWindow.document.write(reportHTML);
+        newWindow.document.close();
+    } else {
+        alert('ახალი ფანჯრის გახსნა დაიბლოკა ბრაუზერის მიერ. გთხოვთ, გამორთოთ Pop-up ბლოკერი.');
+    }
+}
 
     </script>
 </body>

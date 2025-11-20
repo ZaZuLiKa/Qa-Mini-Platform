@@ -17,7 +17,7 @@ app.get('/', (req,res)=>res.sendFile(path.join(__dirname,'public','index.html'))
 // --- API: Get checklists ---
 app.post('/api/get-checklists', (req,res)=>{
     const selectedFeatures = req.body.features;
-    if(!selectedFeatures||!selectedFeatures.length) return res.status(400).json({error:'გთხოვთ, აირჩიოთ მინიმუმ ერთი ფუნქციონალი.'});
+    if(!selectedFeatures||!selectedFeatures.length) return res.status(400).json({error:'Please select at least one functionality.'});
     try{
         const checklistsData = JSON.parse(fs.readFileSync(CHECKLISTS_PATH,'utf8'));
         let combined=[];
@@ -28,17 +28,17 @@ app.post('/api/get-checklists', (req,res)=>{
             }
         });
         res.json({success:true, checklists:combined});
-    }catch(e){ console.error(e); res.status(500).json({error:'ჩექლისტების წაკითხვის შეცდომა'});}
+    }catch(e){ console.error(e); res.status(500).json({error:'Error reading checklists.'});}
 });
 
 // --- API: Save selection ---
 app.post('/api/save-selection', (req,res)=>{
     const {checklists} = req.body;
-    if(!checklists||!checklists.length) return res.status(400).json({success:false,error:'ჩექლისტები ცარიელია'});
+    if(!checklists||!checklists.length) return res.status(400).json({success:false,error:'Checklists are empty.'});
     const sessionId = crypto.randomBytes(16).toString('hex');
     const initialData = checklists.map(i=>({...i, status:'Pending', bugId:null}));
     activeTestSessions[sessionId]=initialData;
-    console.log(`[SESSION] ახალი სესია ID:${sessionId}`);
+    console.log(`[SESSION] New Session ID:${sessionId}`);
     res.json({success:true, sessionId});
 });
 
@@ -49,7 +49,7 @@ app.get('/test-page/:sessionId', (req,res)=>res.sendFile(path.join(__dirname,'pu
 app.get('/api/get-test-data/:sessionId',(req,res)=>{
     const {sessionId} = req.params;
     const data = activeTestSessions[sessionId];
-    if(!data) return res.status(404).json({success:false,error:'ტესტ სესია ვერ მოიძებნა'});
+    if(!data) return res.status(404).json({success:false,error:'Test session not found.'});
     res.json({success:true,testData:data});
 });
 
@@ -57,7 +57,7 @@ app.get('/api/get-test-data/:sessionId',(req,res)=>{
 app.post('/api/update-status',(req,res)=>{
     const {sessionId, checklistItemId, status, bugId} = req.body;
     const session = activeTestSessions[sessionId];
-    if(!session) return res.status(404).json({success:false,error:'სესია არ არსებობს'});
+    if(!session) return res.status(404).json({success:false,error:'Session does not exist.'});
     const index = session.findIndex(i=>i.id===checklistItemId);
     if(index!==-1){
         session[index].status=status;
@@ -65,7 +65,7 @@ app.post('/api/update-status',(req,res)=>{
         console.log(`[UPDATE] Session ${sessionId}: Item ${checklistItemId} => ${status}`);
         return res.json({success:true});
     }
-    res.status(404).json({success:false,error:'ჩექლისტი ვერ მოიძებნა'});
+    res.status(404).json({success:false,error:'Checklist not found.'});
 });
 
 app.listen(port,()=>console.log(`Server running at http://localhost:${port}`));

@@ -45,7 +45,7 @@ body { font-family: Arial, sans-serif; padding: 20px; }
     <button onclick="closeModal()" style="margin-top:10px;padding:5px 10px;">Close</button>
 </div>
 
-<button onclick="downloadReportAsPDF()" style="padding:10px 20px; background-color:#28a745; color:white; border:none; margin-top:10px; cursor:pointer;">Download PDF</button>
+<button id="forhidingbutton" onclick="downloadReportAsPDF()"  hidden style="padding:10px 20px; background-color:#28a745; color:white; border:none; margin-top:10px; cursor:pointer;">Download PDF</button>
 
 <script>
 let currentSessionId = null;
@@ -177,7 +177,11 @@ function showChecklistModal(id){
 function generateReport(){
     document.querySelector('#checklists-test-container').style.display='none';
     document.querySelector('#button-GenerateRTMOnC').style.display='none';
+    
+    let element = document.getElementById("forhidingbutton");
+    element.removeAttribute("hidden");
 
+        
     let passedCount=0, failedCount=0;
     const totalCount=testData.length;
     let reportRows='';

@@ -190,22 +190,18 @@
                 const bugIdDisplay=item.bugId||'-';
                 const statusClass=`class="status-${item.status.toLowerCase()}"`;
 
-                reportRows+=`
-                    <tr>
-                        <td>${item.feature}</td>
-                        <td><a href="#" class="checklist-id"
-                               data-id="${item.id}"
-                               data-feature="${item.feature}"
-                               data-text="${item.text}"
-                               data-status="${item.status}"
-                               data-bug="${bugIdDisplay}">${item.id}</a></td>
-                        <td ${item.status==='Failed'?'class="rtm-bug-id"':''}>
-    ${item.status==='Failed' ? `<a href="${bugIdDisplay}" target="_blank">${bugIdDisplay}</a>` : bugIdDisplay}
-</td>
+                reportRows += `
+    <tr>
+        <td>${item.feature}</td>
+        <td>${item.id}</td>
+        <td>${item.text}</td>
+        <td ${item.status==='Failed'?'class="rtm-bug-id"':''}>
+            ${item.status==='Failed' ? `<a href="${item.bugId}" target="_blank">${item.bugId}</a>` : (item.bugId || '-') }
+        </td>
+        <td class="status-${item.status.toLowerCase()}">${item.status}</td>
+    </tr>
+`;
 
-                        <td ${statusClass}>${item.status}</td>
-                    </tr>
-                `;
             });
 
             const pendingCount=totalCount-passedCount-failedCount;
@@ -229,13 +225,15 @@
                 <div class="summary">${summaryHTML}</div>
                 <table width="100%" border="1" cellpadding="8" cellspacing="0">
                     <thead>
-                        <tr>
-                            <th>ფუნქციონალი</th>
-                            <th>ჩექლისტის ID</th>
-                            <th>ბაგ რეპორტის ID</th>
-                            <th>სტატუსი</th>
-                        </tr>
-                    </thead>
+    <tr>
+        <th>ფუნქციონალი</th>
+        <th>ჩექლისტის ID</th>
+        <th>ჩექლისტის სახელი</th>
+        <th>ბაგ რეპორტის ID</th>
+        <th>სტატუსი</th>
+    </tr>
+</thead>
+
                     <tbody>
                         ${reportRows}
                     </tbody>
@@ -267,7 +265,7 @@
     }
 
     // HTML -> Canvas
-    const canvas = await html2canvas(reportDiv, { scale: 2 }); // უკეთესი ხარისხი
+    const canvas = await html2canvas(reportDiv, { scale: 10 }); // უკეთესი ხარისხი
     const imgData = canvas.toDataURL('image/png');
 
     // PDF შექმნა

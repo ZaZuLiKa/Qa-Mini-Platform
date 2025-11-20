@@ -6,17 +6,47 @@
 <title>QA Mini Platform - Testing</title>
 <link rel="stylesheet" href="/teststyle.css">
 <script src="/script.js" defer></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
+
 <h1>3. Test Execution</h1>
 <h3 id="session-info">Session ID: <span id="session-id"></span></h3>
+<div id="filters" style="margin-bottom: 20px; display:none; gap:20px;">
+    
+    <!-- Status Filter -->
+    <label>
+        Status:
+        <select id="statusFilter" onchange="applyFilters()">
+            <option value="all">All</option>
+            <option value="Pass">Pass</option>
+            <option value="Failed">Failed</option>
+            <option value="Pending">Pending</option>
+        </select>
+    </label>
 
+    <!-- Feature Filter -->
+    <label>
+        Feature:
+        <select id="featureFilter" onchange="applyFilters()">
+            <option value="all">All</option>
+        </select>
+    </label>
+
+    <!-- Search Box -->
+    <label>
+        Search:
+        <input type="text" id="searchFilter" oninput="applyFilters()" placeholder="Search...">
+    </label>
+
+</div>
 <div id="checklists-test-container">
     <p>Loading Checklists...</p>
 </div>
+
 
 <button id="button-GenerateRTMOnC" onclick="generateReport()" style="padding: 10px 20px; background-color: #007bff; color:white; border:none; margin-top:30px; cursor:pointer;">Report-ის გენერაცია (RTM)</button>
 
@@ -30,6 +60,10 @@
 </div>
 
 <button id="forhidingbutton" onclick="downloadReportAsPDF()"  hidden style="padding:10px 20px; background-color:#28a745; color:white; border:none; margin-top:10px; cursor:pointer;">Download PDF</button>
+<button id="downloadExcel"  hidden style="padding:10px 20px; margin-top:10px; background-color:#007bff; color:white; border:none; cursor:pointer;">Download Excel</button>
+<button id="downloadCSV" hidden onclick="downloadReportAsCSV()" style="padding:10px 20px; background-color:#ffc107; color:black; border:none; margin-top:10px; cursor:pointer;">
+    Download CSV
+</button>
 
 
 

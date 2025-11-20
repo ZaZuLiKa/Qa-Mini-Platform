@@ -215,11 +215,13 @@ function showChecklistModal(id){
 function generateReport(){
     document.querySelector('#checklists-test-container').style.display='none';
     document.querySelector('#button-GenerateRTMOnC').style.display='none';
-    
+    document.querySelector('#filters').style.display='flex';
     let element = document.getElementById("forhidingbutton");
     element.removeAttribute("hidden");
-
-        
+    let element1 =document.getElementById("downloadExcel");
+    element1.removeAttribute("hidden");
+    let element2=document.getElementById("downloadCSV");
+    element2.removeAttribute("hidden");
     let passedCount=0, failedCount=0;
     const totalCount=testData.length;
     let reportRows='';
@@ -275,6 +277,17 @@ ${reportRows}
 </tbody>
 </table>
 `;
+// Populate Feature Filter
+const featureDropdown = document.getElementById("featureFilter");
+const uniqueFeatures = [...new Set(testData.map(item => item.feature))];
+
+uniqueFeatures.forEach(f => {
+    const option = document.createElement("option");
+    option.value = f;
+    option.textContent = f;
+    featureDropdown.appendChild(option);
+});
+
 }
 
 // PDF export using jsPDF + autoTable
@@ -313,3 +326,107 @@ function downloadReportAsPDF(){
 
     doc.save(`QA_Report_${currentSessionId}.pdf`);
 }
+document.getElementById('downloadExcel').addEventListener('click', () => {
+    if(testData.length === 0){
+        alert('No data to export!');
+        return;
+    }
+
+    // Prepare worksheet data
+    const wsData = [
+        ["Checklist ID", "Feature", "Description", "Bug ID", "Status"], // headers
+        ...testData.map(item => [
+            item.id,
+            item.feature,
+            item.text,
+            item.status === "Failed" ? item.bugId || '-' : '-',
+            item.status
+        ])
+    ];
+
+    // Create worksheet & workbook
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Test Report");
+
+    // Save to file
+    XLSX.writeFile(wb, `QA_Report_${currentSessionId}.xlsx`);
+});
+function downloadReportAsCSV() {
+    
+
+
+
+    if (!testData || testData.length === 0) {
+        alert('No data to export.');
+        return;
+    }
+
+    // CSV headers
+    const headers = ['Feature', 'Checklist ID', 'Checklist Text', 'Bug ID', 'Status'];
+
+    // Map data to CSV rows
+    const rows = testData.map(item => [
+        `"${item.feature}"`,
+        `"${item.id}"`,
+        `"${item.text}"`,
+        `"${item.status === 'Failed' ? item.bugId || '-' : '-'}"`,
+        `"${item.status}"`
+    ]);
+
+    // Combine headers + rows
+    let csvContent = headers.join(',') + '\n';
+    rows.forEach(row => {
+        csvContent += row.join(',') + '\n';
+    });
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `QA_Report_${currentSessionId}.csv`);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function applyFilters() {
+    const statusValue = document.getElementById("statusFilter").value;
+    const featureValue = document.getElementById("featureFilter").value;
+    const searchValue = document.getElementById("searchFilter").value.toLowerCase();
+
+    const rows = document.querySelectorAll("#report-output table tbody tr");
+
+    rows.forEach(row => {
+        const id = row.children[0].innerText.toLowerCase();
+        const feature = row.children[1].innerText;
+        const text = row.children[2].innerText.toLowerCase();
+        const bugId = row.children[3].innerText.toLowerCase();
+        const status = row.children[4].innerText;
+
+        let visible = true;
+
+        // Filter by status
+        if (statusValue !== "all" && status !== statusValue) visible = false;
+
+        // Filter by feature
+        if (featureValue !== "all" && feature !== featureValue) visible = false;
+
+        // Search filter (ID, Text, Bug ID)
+        if (
+            searchValue &&
+            !id.includes(searchValue) &&
+            !text.includes(searchValue) &&
+            !bugId.includes(searchValue)
+        ) {
+            visible = false;
+        }
+
+        row.style.display = visible ? "" : "none";
+    });
+}
+
+

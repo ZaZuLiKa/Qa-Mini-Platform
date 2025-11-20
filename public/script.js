@@ -152,12 +152,24 @@ function displayTestChecklists() {
         actions.appendChild(failBtn);
 
         const bugInput = document.createElement('div');
-        bugInput.id = `bug-input-${item.id}`;
-        bugInput.style.display = 'none';
-        bugInput.innerHTML = `<input type="text" placeholder="Bug ID (e.g: BUG-001)" id="bug-id-${item.id}" style="margin-left:10px"/>
-            <button onclick="updateTestStatus('${item.id}','Failed',document.getElementById('bug-id-${item.id}').value)">save</button>`;
+bugInput.id = `bug-input-${item.id}`;
+bugInput.style.display = 'none';
 
-        actions.appendChild(bugInput);
+const inputEl = document.createElement('input');
+inputEl.placeholder = "Bug ID (e.g: BUG-001)";
+inputEl.id = `bug-id-${item.id}`;
+inputEl.style.marginLeft = '10px';
+
+const saveBtn = document.createElement('button');
+saveBtn.textContent = 'Save';
+saveBtn.addEventListener('click', () => {
+    updateTestStatus(item.id, 'Failed', inputEl.value);
+});
+
+bugInput.appendChild(inputEl);
+bugInput.appendChild(saveBtn);
+actions.appendChild(bugInput);
+
         itemDiv.appendChild(actions);
 
         container.appendChild(itemDiv);

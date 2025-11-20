@@ -1,20 +1,20 @@
 {
   "Cart": [
-    {"id": "C-001", "text": "შეამოწმეთ პროდუქტის დამატება კალათაში."},
-    {"id": "C-002", "text": "შეამოწმეთ რაოდენობის განახლება (მაქს/მინ რაოდენობები)."},
-    {"id": "C-003", "text": "შეამოწმეთ პროდუქტის წაშლა კალათიდან."},
-    {"id": "C-004", "text": "შეამოწმეთ ფასების სწორი დათვლა (სულ თანხა, გადასახადები)."}
+    {"id": "C-001", "text": "Check adding the product to the cart."},
+    {"id": "C-002", "text": "Check quantity update (max/min limits)."},
+    {"id": "C-003", "text": "Check removing the product from the cart."},
+    {"id": "C-004", "text": "Check correct price calculation (total amount, taxes)."}
   ],
   "Register": [
-    {"id": "R-001", "text": "შეამოწმეთ სავალდებულო ველების ვალიდაცია (ცარიელი ველები)."},
-    {"id": "R-002", "text": "შეამოწმეთ პაროლის მინიმალური მოთხოვნები (სიგრძე, სიმბოლოები)."},
-    {"id": "R-003", "text": "შეამოწმეთ იმეილის უნიკალურობა (უკვე არსებული მომხმარებლის იმეილით რეგისტრაცია)."},
-    {"id": "R-004", "text": "შეამოწმეთ წარმატებული რეგისტრაციის შემდეგ ავტომატური ავტორიზაცია/გადასვლა მთავარ გვერდზე."}
+    {"id": "R-001", "text": "Check mandatory field validation (empty fields)."},
+    {"id": "R-002", "text": "Check password minimum requirements (length, characters)."},
+    {"id": "R-003", "text": "Check email uniqueness (registration with an existing user's email)."},
+    {"id": "R-004", "text": "Check automatic login/redirect to the main page after successful registration."}
   ],
   "Authorization": [
-    {"id": "A-001", "text": "შეამოწმეთ შესვლა სწორი მონაცემებით."},
-    {"id": "A-002", "text": "შეამოწმეთ შესვლა არასწორი პაროლით/იმეილით."},
-    {"id": "A-003", "text": "შეამოწმეთ 'დაგავიწყდა პაროლი' ფუნქციონალი."},
-    {"id": "A-004", "text": "შეამოწმეთ 'დამახსოვრება' (Remember Me) ფუნქციონალი."}
+    {"id": "A-001", "text": "Check login with correct credentials."},
+    {"id": "A-002", "text": "Check login with incorrect password/email."},
+    {"id": "A-003", "text": "Check the Forgot Password functionality."},
+    {"id": "A-004", "text": "Check the Remember Me functionality."}
   ]
 }

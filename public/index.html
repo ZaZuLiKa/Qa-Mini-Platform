@@ -15,10 +15,10 @@
 </head>
 <body>
 
-<h1>QA მინი პლატფორმა</h1>
+<h1>QA Mini Platform</h1>
 
 <div class="feature-selection">
-    <h2>1. ფუნქციონალის შერჩევა</h2>
+    <h2>1.Selecting features</h2>
     <form id="feature-selection-form">
         <label><input type="checkbox" name="features" value="Cart"> Cart</label><br>
         <label><input type="checkbox" name="features" value="Register"> Register</label><br>
@@ -29,13 +29,13 @@
         <label><input type="checkbox" name="features" value="Contact us"> Contact us</label><br>
         <label><input type="checkbox" name="features" value="Subscribe"> Subscribe</label><br>
         <br>
-        <button type="button" onclick="getChecklists()">ჩექლისტების გენერაცია</button>
+        <button type="button" onclick="getChecklists()">Generate Checklists</button>
     </form>
 </div>
 
 <div id="checklist-editor" class="checklist-editor">
-    <h2>2. ჩექლისტების რედაქტირება</h2>
-    <p>თქვენ შეგიძლიათ წაშალოთ არასასურველი ჩექლისტები.</p>
+    <h2>2. Checklist Edit </h2>
+    <p>You can delete unwanted checklists.</p>
     <div id="checklists-container"></div>
     <button onclick="confirmSelection()">Confirm</button>
 </div>
@@ -50,7 +50,7 @@ async function getChecklists() {
     const selectedFeatures = Array.from(form.querySelectorAll('input[name="features"]:checked')).map(cb => cb.value);
 
     if (!selectedFeatures.length) {
-        alert('გთხოვთ, აირჩიოთ მინიმუმ ერთი ფუნქციონალი.');
+        alert('Please select at least one feature.');
         return;
     }
 
@@ -66,10 +66,10 @@ async function getChecklists() {
             displayChecklists(currentChecklists);
             editorSection.style.display = 'block';
             window.scrollTo(0, document.body.scrollHeight);
-        } else alert(data.error || 'სერვერის შეცდომა');
+        } else alert(data.error || 'Server Error');
     } catch (error) {
         console.error(error);
-        alert('კომუნიკაციის შეცდომა სერვერთან.');
+        alert('Communication error with the server.');
     }
 }
 
@@ -82,7 +82,7 @@ function displayChecklists(checklists) {
         if (item.feature !== currentFeature) {
             const title = document.createElement('h3');
             title.className = 'feature-title';
-            title.textContent = `${item.feature} ფუნქციონალი`;
+            title.textContent = `${item.feature} Feature`;
             checklistContainer.appendChild(title);
             currentFeature = item.feature;
         }
@@ -96,7 +96,7 @@ function displayChecklists(checklists) {
         itemDiv.appendChild(textSpan);
 
         const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'წაშლა';
+        deleteButton.textContent = 'Remove';
         deleteButton.onclick = () => removeChecklistItem(item.id);
         itemDiv.appendChild(deleteButton);
 
@@ -111,7 +111,7 @@ function removeChecklistItem(idToRemove) {
 }
 
 async function confirmSelection() {
-    if (!currentChecklists.length) { alert('არჩეული ჩექლისტები არ არის'); return; }
+    if (!currentChecklists.length) { alert('No checklists have been selected.'); return; }
 
     try {
         const response = await fetch('/api/save-selection', {
@@ -122,10 +122,10 @@ async function confirmSelection() {
         const data = await response.json();
         if (response.ok && data.success) {
             window.location.href = `/test-page/${data.sessionId}`;
-        } else alert('შეცდომა მონაცემების შენახვისას');
+        } else alert('Error saving data.');
     } catch (error) {
         console.error(error);
-        alert('კომუნიკაციის შეცდომა.');
+        alert('Communication error.');
     }
 }
 </script>

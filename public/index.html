@@ -4,14 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QA Mini Platform - Checklists</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .feature-selection, .checklist-editor { margin-bottom: 40px; border: 1px solid #ccc; padding: 15px; border-radius: 5px; }
-        .checklist-item { margin-bottom: 10px; padding: 5px; border: 1px dashed #eee; display: flex; align-items: center; }
-        .checklist-item button { margin-left: 10px; cursor: pointer; background-color: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; }
-        .feature-title { font-weight: bold; margin-top: 15px; border-bottom: 2px solid #333; padding-bottom: 5px; }
-        #checklist-editor { display: none; }
-    </style>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/script.js" defer></script>
 </head>
 <body>
 
@@ -40,95 +34,7 @@
     <button onclick="confirmSelection()">Confirm</button>
 </div>
 
-<script>
-let currentChecklists = [];
-const checklistContainer = document.getElementById('checklists-container');
-const editorSection = document.getElementById('checklist-editor');
 
-async function getChecklists() {
-    const form = document.getElementById('feature-selection-form');
-    const selectedFeatures = Array.from(form.querySelectorAll('input[name="features"]:checked')).map(cb => cb.value);
-
-    if (!selectedFeatures.length) {
-        alert('Please select at least one feature.');
-        return;
-    }
-
-    try {
-        const response = await fetch('/api/get-checklists', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ features: selectedFeatures }),
-        });
-        const data = await response.json();
-        if (response.ok && data.success) {
-            currentChecklists = data.checklists;
-            displayChecklists(currentChecklists);
-            editorSection.style.display = 'block';
-            window.scrollTo(0, document.body.scrollHeight);
-        } else alert(data.error || 'Server Error');
-    } catch (error) {
-        console.error(error);
-        alert('Communication error with the server.');
-    }
-}
-
-function displayChecklists(checklists) {
-    document.querySelector('.feature-selection').style.display = 'none';
-    checklistContainer.innerHTML = '';
-    let currentFeature = null;
-
-    checklists.forEach(item => {
-        if (item.feature !== currentFeature) {
-            const title = document.createElement('h3');
-            title.className = 'feature-title';
-            title.textContent = `${item.feature} Feature`;
-            checklistContainer.appendChild(title);
-            currentFeature = item.feature;
-        }
-
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'checklist-item';
-        itemDiv.id = `item-${item.id}`;
-        
-        const textSpan = document.createElement('span');
-        textSpan.textContent = `(${item.id}) ${item.text}`;
-        itemDiv.appendChild(textSpan);
-
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Remove';
-        deleteButton.onclick = () => removeChecklistItem(item.id);
-        itemDiv.appendChild(deleteButton);
-
-        checklistContainer.appendChild(itemDiv);
-    });
-}
-
-function removeChecklistItem(idToRemove) {
-    currentChecklists = currentChecklists.filter(item => item.id !== idToRemove);
-    const element = document.getElementById(`item-${idToRemove}`);
-    if (element) element.remove();
-}
-
-async function confirmSelection() {
-    if (!currentChecklists.length) { alert('No checklists have been selected.'); return; }
-
-    try {
-        const response = await fetch('/api/save-selection', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ checklists: currentChecklists }),
-        });
-        const data = await response.json();
-        if (response.ok && data.success) {
-            window.location.href = `/test-page/${data.sessionId}`;
-        } else alert('Error saving data.');
-    } catch (error) {
-        console.error(error);
-        alert('Communication error.');
-    }
-}
-</script>
 
 </body>
 </html>

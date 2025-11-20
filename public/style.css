@@ -1,0 +1,6 @@
+body { font-family: Arial, sans-serif; padding: 20px; }
+.feature-selection, .checklist-editor { margin-bottom: 40px; border: 1px solid #ccc; padding: 15px; border-radius: 5px; }
+.checklist-item { margin-bottom: 10px; padding: 5px; border: 1px dashed #eee; display: flex; align-items: center; }
+.checklist-item button { margin-left: 10px; cursor: pointer; background-color: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; }
+.feature-title { font-weight: bold; margin-top: 15px; border-bottom: 2px solid #333; padding-bottom: 5px; }
+#checklist-editor { display: none; }

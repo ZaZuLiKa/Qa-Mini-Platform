@@ -451,3 +451,30 @@ function renderRTMTable(){
     });
 }
 
+let sessionLog = [];
+
+function addActivityLog(message) {
+    const logContainer = document.getElementById('session-log');
+
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = `${timestamp} - ${message}`;
+    
+    sessionLog.push(logEntry);
+
+    // განახლება HTML-ში
+    logContainer.innerHTML = sessionLog.map(entry => `<p>${entry}</p>`).join('');
+}
+function updateTestStatus(id, status, bugId = null) {
+    const index = testData.findIndex(item => item.id === id);
+    if (index !== -1) {
+        testData[index].status = status;
+        testData[index].bugId = status === 'Failed' ? (bugId || 'N/A') : null;
+        saveTestStatusUpdate(id, status, testData[index].bugId);
+        displayTestChecklists();
+
+        addActivityLog(`Checklist ID ${id} set to "${status}"${bugId ? ` with Bug ID ${bugId}` : ''}`);
+    }
+}
+
+
+

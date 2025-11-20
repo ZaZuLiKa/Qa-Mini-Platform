@@ -431,49 +431,7 @@ function applyFilters() {
 
 
     
-function generateReport(){
-    document.querySelector('#checklists-test-container').style.display='none';
-    document.querySelector('#button-GenerateRTMOnC').style.display='none';
-    document.getElementById("forhidingbutton").removeAttribute("hidden");
 
-    const reportDiv = document.getElementById('report-output');
-    reportDiv.style.display='block';
-
-    const totalCount = testData.length;
-    const passedCount = testData.filter(item=>item.status==='Pass').length;
-    const failedCount = testData.filter(item=>item.status==='Failed').length;
-    const pendingCount = totalCount - passedCount - failedCount;
-
-    const summaryHTML = `
-        <p><strong>Report generation time:</strong> ${new Date().toLocaleString()}</p>
-        <p>
-        Total: <strong>${totalCount}</strong> |
-        ✅ Pass: <strong>${passedCount}</strong> |
-        ❌ Failed: <strong>${failedCount}</strong> |
-        ⏳ Pending: <strong>${pendingCount}</strong>
-        </p>
-    `;
-
-    reportDiv.innerHTML = `
-        <h2>Requirement Tracebility Matrix (RTM)</h2>
-        <div class="summary">${summaryHTML}</div>
-        <table id="rtm-table" width="100%" border="1" cellpadding="8" cellspacing="0">
-            <thead>
-                <tr>
-                    <th onclick="sortByColumn('id')">Checklist ID 🔽</th>
-                    <th onclick="sortByColumn('feature')">Feature 🔽</th>
-                    <th onclick="sortByColumn('text')">Description 🔽</th>
-                    <th onclick="sortByColumn('bugId')">Bug ID 🔽</th>
-                    <th onclick="sortByColumn('status')">Status 🔽</th>
-                </tr>
-            </thead>
-            <tbody id="rtm-table-body">
-            </tbody>
-        </table>
-    `;
-
-    renderRTMTable();
-}
 
 // ვაგენერიროთ სვეტების მონაცემები tbody-ში
 function renderRTMTable(){
@@ -493,25 +451,3 @@ function renderRTMTable(){
     });
 }
 
-// სორტირება სვეტის მიხედვით
-let currentSort = { column:null, asc:true };
-
-function sortByColumn(column){
-    if(currentSort.column === column) currentSort.asc = !currentSort.asc;
-    else currentSort = { column, asc:true };
-
-    testData.sort((a,b)=>{
-        let valA = a[column] || '';
-        let valB = b[column] || '';
-        if(column==='status'){
-            const order = { 'Pass':1, 'Failed':2, 'Pending':3 };
-            valA = order[valA] || 4;
-            valB = order[valB] || 4;
-        }
-        if(valA < valB) return currentSort.asc ? -1 : 1;
-        if(valA > valB) return currentSort.asc ? 1 : -1;
-        return 0;
-    });
-
-    renderRTMTable();
-}

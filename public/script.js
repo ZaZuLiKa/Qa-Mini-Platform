@@ -272,7 +272,7 @@ Total: <strong>${totalCount}</strong> |
     const reportDiv = document.getElementById('report-output');
     reportDiv.style.display='block';
     reportDiv.innerHTML=`
-<h2>Requirement Tracebility Matrix (RTM)</h2>
+<h2>Test Report</h2>
 <div class="summary">${summaryHTML}</div>
 <table width="100%" border="1" cellpadding="8" cellspacing="0">
 <thead>

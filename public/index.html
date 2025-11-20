@@ -29,15 +29,17 @@
         <label><input type="checkbox" name="features" value="Subscribe"> Performance</label><br>
         <label><input type="checkbox" name="features" value="Subscribe"> UI</label><br>
         <br>
-        <button type="button" onclick="getChecklists()">Generate Checklists</button>
+        <button type="button" onclick="getChecklists()" style="padding: 10px 20px; background-color: #007bff; color:white; cursor:pointer;">Generate Checklists</button>
     </form>
 </div>
 
 <div id="checklist-editor" class="checklist-editor">
+    
     <h2>2. Checklist Edit </h2>
     <p>You can delete unwanted checklists.</p>
+    <button onclick="confirmSelection()" style="padding: 10px 20px; background-color: #007bff; color:white;  cursor:pointer;">Confirm</button>
     <div id="checklists-container"></div>
-    <button onclick="confirmSelection()">Confirm</button>
+    
 </div>
 
 
